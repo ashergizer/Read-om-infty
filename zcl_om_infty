@@ -1,0 +1,104 @@
+CLASS zcl_test_om_infty DEFINITION
+  PUBLIC
+  FINAL
+  CREATE PUBLIC .
+
+  PUBLIC SECTION.
+
+    CLASS-METHODS read_plain
+      IMPORTING
+        !iv_plvar         TYPE plog-plvar DEFAULT zcl_om_const=>mv_plvar
+        !iv_otype         TYPE plog-otype
+        !iv_objid         TYPE plog-objid
+        !iv_infty         TYPE plog-infty DEFAULT '*'
+        !iv_subty         TYPE plog-subty DEFAULT '*'
+        !iv_istat         TYPE plog-istat DEFAULT '*'
+        !iv_begda         TYPE plog-begda DEFAULT if_hrbas_constants=>low_date
+        !iv_endda         TYPE plog-endda DEFAULT if_hrbas_constants=>high_date
+        !iv_condition     TYPE hrbas_condition OPTIONAL
+        !iv_fill_buffer   TYPE boole_d DEFAULT if_hrbas_boole_d=>true
+        !it_objects       TYPE hrobject_tab OPTIONAL
+        !iv_no_auth_check TYPE boole_d OPTIONAL
+      EXPORTING
+        !et_pnnnn         TYPE STANDARD TABLE
+        !et_hrtnnnn_tab   TYPE STANDARD TABLE
+        !ev_missing_auth  TYPE boole_d
+        !ev_data_exists   TYPE boole_d .
+  PROTECTED SECTION.
+  PRIVATE SECTION.
+
+    CLASS-DATA mo_reader TYPE REF TO cl_hrbas_read_infotype .
+
+    CLASS-METHODS get_infotype_reader
+      RETURNING
+        VALUE(ro_infty_reader) TYPE REF TO cl_hrbas_read_infotype .
+ENDCLASS.
+
+
+
+CLASS zcl_om_infty IMPLEMENTATION.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Private Method ZCL_TEST_OM_INFTY=>GET_INFOTYPE_READER
+* +-------------------------------------------------------------------------------------------------+
+* | [<-()] RO_INFTY_READER                TYPE REF TO CL_HRBAS_READ_INFOTYPE
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD get_infotype_reader.
+
+    IF mo_reader IS NOT BOUND.
+      mo_reader = cl_hrbas_read_infotype=>get_instance( ).
+    ENDIF.
+
+    ro_infty_reader = mo_reader.
+
+  ENDMETHOD.
+
+
+* <SIGNATURE>---------------------------------------------------------------------------------------+
+* | Static Public Method ZCL_TEST_OM_INFTY=>READ_PLAIN
+* +-------------------------------------------------------------------------------------------------+
+* | [--->] IV_PLVAR                       TYPE        PLOG-PLVAR (default =ZCL_OM_CONST=>MV_PLVAR)
+* | [--->] IV_OTYPE                       TYPE        PLOG-OTYPE
+* | [--->] IV_OBJID                       TYPE        PLOG-OBJID
+* | [--->] IV_INFTY                       TYPE        PLOG-INFTY (default ='*')
+* | [--->] IV_SUBTY                       TYPE        PLOG-SUBTY (default ='*')
+* | [--->] IV_ISTAT                       TYPE        PLOG-ISTAT (default ='*')
+* | [--->] IV_BEGDA                       TYPE        PLOG-BEGDA (default =IF_HRBAS_CONSTANTS=>LOW_DATE)
+* | [--->] IV_ENDDA                       TYPE        PLOG-ENDDA (default =IF_HRBAS_CONSTANTS=>HIGH_DATE)
+* | [--->] IV_CONDITION                   TYPE        HRBAS_CONDITION(optional)
+* | [--->] IV_FILL_BUFFER                 TYPE        BOOLE_D (default =IF_HRBAS_BOOLE_D=>TRUE)
+* | [--->] IT_OBJECTS                     TYPE        HROBJECT_TAB(optional)
+* | [--->] IV_NO_AUTH_CHECK               TYPE        BOOLE_D(optional)
+* | [<---] ET_PNNNN                       TYPE        STANDARD TABLE
+* | [<---] ET_HRTNNNN_TAB                 TYPE        STANDARD TABLE
+* | [<---] EV_MISSING_AUTH                TYPE        BOOLE_D
+* | [<---] EV_DATA_EXISTS                 TYPE        BOOLE_D
+* +--------------------------------------------------------------------------------------</SIGNATURE>
+  METHOD read_plain.
+
+    " Read data
+    DATA(lo_reader) = get_infotype_reader( ).
+
+    TRY.
+        lo_reader->if_hrbas_read_infotype~read_plain( EXPORTING plvar         = iv_plvar
+                                                                otype         = iv_otype
+                                                                objid         = iv_objid
+                                                                infty         = iv_infty
+                                                                subty         = iv_subty
+                                                                istat         = iv_istat
+                                                                begda         = iv_begda
+                                                                endda         = iv_endda
+                                                                condition     = iv_condition
+                                                                fill_buffer   = iv_fill_buffer
+                                                                objects       = it_objects
+                                                                no_auth_check = iv_no_auth_check
+                                                      IMPORTING pnnnn_tab     = et_pnnnn
+                                                                hrtnnnn_tab   = et_hrtnnnn_tab
+                                                                missing_auth  = ev_missing_auth
+                                                                data_exists   = ev_data_exists ).
+      CATCH cx_hrbas_violated_assertion.
+    ENDTRY.
+
+  ENDMETHOD.
+ENDCLASS.
