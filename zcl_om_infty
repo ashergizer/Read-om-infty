@@ -1,4 +1,4 @@
-CLASS zcl_test_om_infty DEFINITION
+CLASS zcl_om_infty DEFINITION
   PUBLIC
   FINAL
   CREATE PUBLIC .
